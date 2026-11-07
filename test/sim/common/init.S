@@ -104,8 +104,16 @@ j \name
 	la a0, core1_entry_vector
 	lw a0, (a0)
 	beqz a0, .core1_wait_loop
+	// Core 1's stack: __core1_stack_top if the linker script sets it, else
+	// __stack_top - 0x10000. Weak and absolute (lui/addi), so an unset
+	// __core1_stack_top is 0.
+	lui sp, %hi(__core1_stack_top)
+	addi sp, sp, %lo(__core1_stack_top)
+	bnez sp, 1f
 	la sp, __stack_top - 0x10000
+1:
 	jalr a0
+.weak __core1_stack_top
 .core1_finish:
 	wfi
 	j .core1_finish
